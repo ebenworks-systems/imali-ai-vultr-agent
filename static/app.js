@@ -79,9 +79,13 @@ function dayLong(iso) {
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
   return `${d} ${MONTHS_LONG[m - 1]} ${y}`;
 }
+// Times show on the shop's clock, as the dates of its records do, wherever the visitor is.
+const SHOP_CLOCK = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Africa/Johannesburg", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+});
 function clock(iso) {
-  const t = new Date(iso);
-  return `${day(iso)} ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
+  const p = Object.fromEntries(SHOP_CLOCK.formatToParts(new Date(iso)).map((x) => [x.type, x.value]));
+  return `${Number(p.day)} ${MONTHS[Number(p.month) - 1]} ${p.hour}:${p.minute}`;
 }
 
 let toastTimer;
@@ -515,7 +519,7 @@ function renderFound(feed) {
     evRow(e.data.date, e.message, e.data.accounts ? e.data.accounts.join(" and ") : "", e.data.amount_cents)));
   box.replaceChildren(rows);
   if (S.found.length > 5) {
-    box.append(el("p", { class: "ev-more" }, `and ${S.found.length - 5} more lines. `,
+    box.append(el("p", { class: "ev-more" }, `and ${S.found.length - 5} more ${S.found.length - 5 === 1 ? "line" : "lines"}. `,
       el("button", { type: "button", onclick: () => { go({ f: "matched" }); $("[data-review]").scrollIntoView({ block: "start" }); } }, "See them all")));
   }
 }
@@ -531,7 +535,7 @@ function renderOwes(feed) {
       el("span", { class: "ev-amt", text: rand(e.data.open_cents) }))));
   box.replaceChildren(rows);
   if (S.owes.length > 5) {
-    box.append(el("p", { class: "ev-more" }, `and ${S.owes.length - 5} more contractors. `,
+    box.append(el("p", { class: "ev-more" }, `and ${S.owes.length - 5} more ${S.owes.length - 5 === 1 ? "contractor" : "contractors"}. `,
       el("button", { type: "button", onclick: () => go({ v: "books", b: "owes" }) }, "See who owes")));
   }
 }
