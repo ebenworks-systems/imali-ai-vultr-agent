@@ -2,11 +2,11 @@
 
 Imali AI runs the books, stock and sales of shops, suppliers and company groups. This repository is its month-end agent for a building-supply merchant. A shop owner usually closes the month by ticking each bank line against invoices, bills and the day's takings by hand; this agent does that matching and leaves the owner only the lines that need a decision. The owner tells their agent what happened by text or voice note, and the agent drafts each record. At the month's end it reads the bank statement, matches every line to the books, flags what does not fit, lists who owes money with follow-ups to copy, and posts what the owner approves to balanced double-entry books.
 
-On the shop's October statement of 33 lines, the live copy closes the month in about half a minute. It matches 10 lines to invoices, bills and cash-ups, suggests an account for 16 costs and leaves 7 for the owner, and once all 33 lines are approved and posted, the bank balance in the books equals the statement's closing balance of R126,662.02.
+On the shop's October statement of 33 lines, the live copy closes the month in less than 30 seconds and finds that the shop paid Thabeng Roof Sheeting R21,760.00 twice, that a contractor paid R415.50 less than its invoice, and that contractors owe the shop R57,475.50 past its due date, with a follow-up drafted for each of the three late contractors. It matches 10 lines to invoices, bills and cash-ups, suggests an account for 16 costs and leaves 7 for the owner. Beyond matching, it books the payment made twice as money the supplier must pay back, says why each of the 4 amounts that do not match was flagged, and once all 33 lines are approved and posted, the bank balance in the books equals the statement's closing balance of R126,662.02. The full step stream of that close, through posting, is in [docs/close-stream-october.txt](docs/close-stream-october.txt).
 
-It was built for Challenge 2 of Vultr: Agent Rush, "Powering the Future of Work", and this page is written for the event's judges and for developers who want to run it. The live copy runs on one Vultr VM in Seoul at https://158-247-235-244.sslip.io. To try it, follow the three-minute walk in [DEMO.md](DEMO.md); to run or deploy it yourself, see Run it and Deploy on Vultr below.
+It was built for Challenge 2 of Vultr: Agent Rush, "Powering the Future of Work", and this page is written for the event's judges and for developers who want to run it. Run it, Deploy on Vultr and the Code column of the Vultr table are for developers. The live copy runs on one Vultr VM in Seoul at https://158-247-235-244.sslip.io. To try it, follow the three-minute walk in [DEMO.md](DEMO.md); to run or deploy it yourself, see Run it and Deploy on Vultr below.
 
-![The agent drafting a sale, at 1280 pixels](docs/screenshots/agent-1280.png)
+![The review after a close, with the payment made twice and an overpayment first](docs/screenshots/review-1280.png)
 
 ## The five steps of "Close my month"
 
@@ -18,6 +18,26 @@ The close runs as a job on the server, and each step streams to the page as it h
 4. List who owes: the agent works out what each contractor owes once the matched payments are posted, and drafts a follow-up for each late account for the owner to copy into their own chat. It sends nothing.
 5. Post and summarise: the owner approves or rejects each item, alone or in groups. Approved items post to the ledger as balanced entries, and the page shows a one-page summary of the month with the bank balance checked against the statement.
 
+## What it looks like
+
+The screenshots are from the live copy on 4 November 2026, at 1280 pixels wide; `docs/screenshots/` also has the main views at 390 pixels, the width of a phone.
+
+The close streams each step as it runs, with the Vultr calls each step made. This is the close of 4 November, after posting.
+
+![Close my month with all five steps done](docs/screenshots/close-steps-1280.png)
+
+A voice note is turned into words by Vultr's Whisper model, and the agent drafts the cost for the owner to approve.
+
+![A voice note about fuel, drafted under Fuel and vehicle costs](docs/screenshots/voice-1280.png)
+
+After posting, the summary checks the books against the bank statement and checks that the two sides of the books are equal.
+
+![The month's summary with its checks](docs/screenshots/summary-checks-1280.png)
+
+The audit trail names every item the agent drafted and the owner approved, rejected or posted.
+
+![The audit trail](docs/screenshots/audit-1280.png)
+
 ## How it uses Vultr
 
 | Vultr service | Model or plan | What it does here | Code |
@@ -28,11 +48,24 @@ The close runs as a job on the server, and each step streams to the page as it h
 | Serverless Inference | bge-reranker-v2-m3 | Scores customers, suppliers and accounts against each statement line | `VultrRanker.scores` |
 | Serverless Inference | nemotron-3.5-content-safety | Screens every chat message and the statement's wording before the agent reads it | `Vultr.screen` |
 
-The agent's reasoning, its tool calls and the text it writes come from a chat model reached through `LLM_BASE_URL`, which can be any service that speaks OpenAI's chat format. Code checks every figure it proposes: an amount must appear in the owner's own words, and a follow-up or the month's summary paragraph may only name sums the books hold.
+In the chat, a reasoning model decides which of the agent's four tools to call: draft a record, list who owes, read the shop's figures or start the close. It also writes the follow-ups and the month's summary paragraph. It is reached through `LLM_BASE_URL`, which can be any service that speaks OpenAI's chat format. Code checks every figure it proposes: an amount must appear in the owner's own words, and a follow-up or the month's summary paragraph may only name sums the books hold.
 
 We measured the reranker on the shop's October statement. On the eight costs the tests check, the right account scored between 0.016 and 0.86 and every wrong one 0.0015 or less, so the matcher trusts its first choice only when that choice clears a small floor and scores at least five times the second. Those scores are kept in `tests/data/rerank-october.json`, and the tests replay them. If Vultr cannot be reached, a word-matching ranker takes over and the step stream says so.
 
 ## Architecture
+
+```mermaid
+flowchart LR
+  B[Browser] --> C[Caddy: TLS]
+  C --> A[Web app: FastAPI]
+  A <--> D[(Postgres: books, jobs, proposals, audit trail)]
+  K[Worker] <--> D
+  A --> X[Parser container: no network]
+  A --> V[Vultr Serverless Inference]
+  K --> V
+  A --> L[Reasoning model: LLM_BASE_URL]
+  K --> L
+```
 
 The browser talks only to Caddy, the web server in front, which passes requests to the web app (FastAPI). The web app and a background worker share one Postgres database, which holds the books, the jobs, every proposal and the audit trail. When the owner presses Close my month, the web app saves a job and the database tells the worker at once (`LISTEN/NOTIFY`). The worker claims the job so that no second worker can run it (`FOR UPDATE SKIP LOCKED`) and writes each step as an event, and the page shows each event as soon as it is written (server-sent events). Uploaded statements and voice notes reach the parser container through a small folder held in memory. That container cannot reach the internet, cannot change its own files, has no special rights on the machine and runs as its own user, and it deletes each file once it has read it.
 

@@ -1,0 +1,61 @@
+The step stream of one close on the live copy, 4 November 2026 (started 03:04:48 KST).
+Each line is an event the worker wrote and the page showed as it arrived, timed from the first one.
+Between 16.5 s and 273.5 s the owner read the review and approved all 33 items, then pressed Post approved entries.
+
+   0.0 s  [1] start: Read the bank statement
+   0.0 s  [1] info: Opened statement-october-2026.csv in the parser sandbox, which has no network: 33 lines from 1 to 31 October.
+   0.0 s  [1] info: The running balance adds up on every line: R184,250.40 at the start, R151,340.00 in, R208,928.38 out, R126,662.02 at the end.
+   1.1 s  [1] done: The statement's wording passed the safety screen before any model read it.
+   1.1 s  [2] start: Match each line to the books
+  12.2 s  [2] info: Ranked names and accounts with Vultr bge-reranker-v2-m3 and qwen3-embedding-4b. The figures decide each match: an invoice or bill is only chosen when its amount and date fit.
+  12.2 s  [2] found: Rent: R18,500.00
+  12.2 s  [2] found: Fourie Steel Fixers paid INV-1036
+  12.3 s  [2] found: Electricity and water: R2,450.00
+  12.3 s  [2] found: Takings for the week to 4 Oct banked
+  12.3 s  [2] found: Bank charges: R35.62
+  12.3 s  [2] found: Fuel and vehicle costs: R1,860.40
+  12.3 s  [2] found: Takings for the week to 11 Oct banked
+  12.3 s  [2] found: Bank charges: R41.95
+  12.3 s  [2] found: Msimang Drywall & Ceilings paid INV-1040
+  12.3 s  [2] found: Fuel and vehicle costs: R2,105.75
+  12.3 s  [2] found: Radebe Glazing & Aluminium paid INV-1041 and INV-1047
+  12.3 s  [2] found: Paid Nalane Cement Traders for NCT-5521
+  12.3 s  [2] found: Phone and internet: R649.00
+  12.3 s  [2] found: Repairs and maintenance: R4,380.00
+  12.3 s  [2] found: Takings for the week to 18 Oct banked
+  12.3 s  [2] found: Bank charges: R34.76
+  12.3 s  [2] found: Paid Thabeng Roof Sheeting for TRS-2290
+  12.3 s  [2] found: Fuel and vehicle costs: R1,944.10
+  12.3 s  [2] found: Electricity and water: R1,200.00
+  12.3 s  [2] found: Naidoo Tile Studio paid INV-1045
+  12.3 s  [2] found: Wages: R38,600.00
+  12.3 s  [2] found: Bank charges: R38.60
+  12.3 s  [2] found: Electricity and water: R1,735.20
+  12.3 s  [2] found: Security: R899.00
+  12.3 s  [2] found: Fourie Steel Fixers paid INV-1054
+  12.3 s  [2] found: Bank charges: R189.00
+  12.3 s  [2] done: 10 lines matched to invoices, bills and cash-ups; 16 costs given a suggested account; 7 left for you.
+  12.3 s  [3] start: Flag what needs you
+  12.3 s  [3] flag: Thabeng Roof Sheeting paid twice
+  12.3 s  [3] flag: Paid Marumo Steel Supply more than MSS-0874
+  12.3 s  [3] flag: Deposit less than the takings for 25 Oct
+  12.3 s  [3] flag: Mosia Plaster & Paint paid less than INV-1038
+  12.3 s  [3] flag: R5,000.00 from Pillay Fencing & Gates matches no invoice
+  12.3 s  [3] flag: Money out that matches nothing: R3,500.00
+  12.3 s  [3] flag: Money out that matches nothing: R2,000.00
+  12.3 s  [3] done: Found 1 duplicate payment, 4 amounts that do not match and 2 payments out that match nothing.
+  12.3 s  [4] start: List who owes, with follow-ups to copy
+  12.3 s  [4] info: Once the matched payments are posted, contractors owe R131,940.50 on 31 October, and R57,475.50 of it is past its due date.
+  16.4 s  [4] owes: Pillay Fencing & Gates
+  16.4 s  [4] owes: Ntuli Shopfitters
+  16.4 s  [4] owes: Mosia Plaster & Paint
+  16.4 s  [4] owes: Fourie Steel Fixers
+  16.4 s  [4] owes: Msimang Drywall & Ceilings
+  16.4 s  [4] owes: Naidoo Tile Studio
+  16.4 s  [4] done: 3 follow-ups are drafted for you to copy into your own chats. The agent sends nothing.
+  16.5 s  [5] waiting: 33 items wait for you. Approve or reject each one, then press Post approved entries.
+ 273.5 s  [5] start: Post approved entries and summarise the month
+ 273.8 s  [5] info: Posted 33 approved entries to the ledger, each one balanced.
+ 273.9 s  [5] info: The trial balance agrees: debits and credits are both R1,313,779.28.
+ 273.9 s  [5] info: The bank account in the books is R126,662.02 on 31 October, the same as the statement. The month is reconciled.
+ 276.8 s  [5] done: The month's one-page summary is ready.
