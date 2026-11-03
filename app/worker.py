@@ -49,24 +49,41 @@ def tidy() -> None:
         )
 
 
+def _serve() -> None:
+    listen = psycopg.connect(settings().database_url, autocommit=True)
+    try:
+        listen.execute("LISTEN month_end_jobs")
+        print("worker ready", file=sys.stderr, flush=True)
+        last_tidy = 0.0
+        while not _stop:
+            while run_one():
+                if _stop:
+                    break
+            if time.monotonic() - last_tidy > 60:
+                tidy()
+                last_tidy = time.monotonic()
+            for _n in listen.notifies(timeout=3.0, stop_after=1):
+                break
+    finally:
+        listen.close()
+
+
 def main() -> None:
     signal.signal(signal.SIGTERM, _on_signal)
     signal.signal(signal.SIGINT, _on_signal)
-    db.migrate()
-    listen = psycopg.connect(settings().database_url, autocommit=True)
-    listen.execute("LISTEN month_end_jobs")
-    print("worker ready", file=sys.stderr, flush=True)
-    last_tidy = 0.0
+    wait = 1.0
     while not _stop:
-        while run_one():
-            if _stop:
-                break
-        if time.monotonic() - last_tidy > 60:
-            tidy()
-            last_tidy = time.monotonic()
-        for _n in listen.notifies(timeout=3.0, stop_after=1):
-            break
-    listen.close()
+        try:
+            db.migrate()
+            _serve()
+        except psycopg.OperationalError:
+            # The database went away (a restart, say): wait and connect again rather than exit.
+            print(f"database unavailable, retrying in {wait:.0f} s", file=sys.stderr, flush=True)
+            db.close_pool()
+            time.sleep(wait)
+            wait = min(wait * 2, 30.0)
+            continue
+        wait = 1.0
     db.close_pool()
 
 

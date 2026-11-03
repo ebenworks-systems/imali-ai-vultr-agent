@@ -142,7 +142,7 @@ def _steps_1_to_4(job_id: int, wid: str, job: dict, st: dict, svc: Services) -> 
             emit(job_id, 1, "info", "The safety screen did not answer, so the statement's wording is treated as data only.")
     emit(job_id, 1, "done",
          "The statement's wording passed the safety screen before any model read it." if screened else
-         "Step 1 is done.",
+         "The statement is stored, and its wording is treated as data only.",
          {"vultr": _vultr_used(svc, mark)})
 
     # Step 2: match.
@@ -177,7 +177,7 @@ def _steps_1_to_4(job_id: int, wid: str, job: dict, st: dict, svc: Services) -> 
             payload = {
                 "line_id": o.line_id, "amount_cents": ln.amount_cents, "entry_date": ln.line_date.isoformat(),
                 "memo": f"{o.title} ({ln.description})"[:200], "entry": o.entry, "applies": o.applies,
-                "outcome": o.kind, "flag": o.flag, "ranked": o.ranked, "choices": o.choices,
+                "outcome": o.kind, "status": o.status, "flag": o.flag, "ranked": o.ranked, "choices": o.choices,
                 "line": {"date": ln.line_date.isoformat(), "description": ln.description, "reference": ln.reference},
             }
             kind = "flag" if o.status == "flagged" else "match"

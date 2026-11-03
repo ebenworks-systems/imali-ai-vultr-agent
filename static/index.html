@@ -1,1 +1,222 @@
-<!doctype html><title>Imali AI</title>
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
+<title>Imali AI month-end agent</title>
+<meta name="description" content="Your agent in Imali AI drafts records from a text or voice note and closes the month against the bank statement, and nothing reaches the books until you approve it.">
+<link rel="icon" href="/static/img/imali-icon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/fonts/funnel-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/funnel-sans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the books</a>
+
+<header class="island" id="top">
+  <a class="island-logo" href="?v=agent" data-view="agent" aria-label="Imali AI, your agent">
+    <img src="/static/img/imali-logo-horizontal.svg" alt="Imali AI" width="110" height="34">
+  </a>
+  <nav class="tabs" aria-label="Views">
+    <a href="?v=agent" data-view="agent" class="tab">Your agent</a>
+    <a href="?v=close" data-view="close" class="tab">Close my month <span class="tab-dot" data-close-dot hidden></span></a>
+    <a href="?v=books" data-view="books" class="tab">Books</a>
+  </nav>
+  <div class="island-end">
+    <span class="timer" data-timer aria-live="off" title="Time left in your copy"></span>
+    <button class="btn btn-quiet btn-sm" type="button" data-start-over>Start over</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="intro" aria-labelledby="intro-title">
+    <div class="intro-text reveal">
+      <p class="eyebrow"><span class="eyebrow-dot"></span><span data-shop>Lesedi Ridge Build Supply</span></p>
+      <h1 id="intro-title">Your agent closes the month, and nothing reaches the books until you approve it.</h1>
+      <p class="lead">Tell your agent what happened by text or voice note and it drafts the record. At the month's end it reads the bank statement, matches every line, flags what does not fit, lists who owes you and posts what you approve to balanced double-entry books.</p>
+      <p class="notice" data-notice>This copy of the shop's books is yours for two hours, and nothing you do in it reaches anyone. Start over gives you a fresh copy at any time.</p>
+    </div>
+    <div class="figures reveal" aria-label="The shop's figures" data-figures>
+      <div class="shell fig fig-bank"><div class="core">
+        <p class="fig-label">Bank account in the books</p>
+        <p class="fig-value" data-fig="bank">&nbsp;</p>
+        <p class="fig-note" data-fig-note="bank">&nbsp;</p>
+      </div></div>
+      <div class="shell fig"><div class="core">
+        <p class="fig-label">Contractors owe</p>
+        <p class="fig-value" data-fig="debtors">&nbsp;</p>
+      </div></div>
+      <div class="shell fig"><div class="core">
+        <p class="fig-label">Owed to suppliers</p>
+        <p class="fig-value" data-fig="creditors">&nbsp;</p>
+      </div></div>
+      <div class="shell fig"><div class="core">
+        <p class="fig-label">Cash on hand</p>
+        <p class="fig-value" data-fig="cash">&nbsp;</p>
+      </div></div>
+      <div class="shell fig"><div class="core">
+        <p class="fig-label">Waiting for your approval</p>
+        <p class="fig-value" data-fig="pending">&nbsp;</p>
+      </div></div>
+    </div>
+  </section>
+
+  <div class="banner" data-banner hidden role="status"></div>
+
+  <!-- Your agent -->
+  <section class="view" data-panel="agent" aria-labelledby="agent-title">
+    <div class="view-head">
+      <h2 id="agent-title">Your agent</h2>
+      <p>Write or say what happened in the shop. Your agent drafts each record as a card, and it stays a draft until you press Approve.</p>
+    </div>
+    <div class="agent-grid">
+      <div class="shell chat-shell"><div class="core chat">
+        <ol class="messages" data-messages aria-live="polite" aria-label="Your conversation with your agent"></ol>
+        <form class="composer" data-composer>
+          <label class="sr-only" for="say">What happened?</label>
+          <textarea id="say" name="text" rows="1" maxlength="600" placeholder="What happened today?" autocomplete="off" enterkeyhint="send"></textarea>
+          <button class="icon-btn mic" type="button" data-mic aria-label="Record a voice note of up to 30 seconds">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>
+            <span class="mic-time" data-mic-time></span>
+          </button>
+          <button class="icon-btn send" type="submit" aria-label="Send to your agent">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </button>
+        </form>
+      </div></div>
+      <aside class="agent-side">
+        <div class="shell"><div class="core side-card">
+          <h3>Try saying</h3>
+          <ul class="chips" data-suggest>
+            <li><button type="button" class="chip">Sold 20 bags of cement for R2,300 cash</button></li>
+            <li><button type="button" class="chip">Ntuli Shopfitters took 12 sheets of drywall for R3,960 on account</button></li>
+            <li><button type="button" class="chip">Paid R850 cash for diesel for the bakkie</button></li>
+            <li><button type="button" class="chip">Who owes me money?</button></li>
+            <li><button type="button" class="chip">Close my month</button></li>
+          </ul>
+        </div></div>
+        <div class="shell"><div class="core side-card">
+          <h3>How your agent checks itself</h3>
+          <p>A reasoning model picks what to do, and code checks the rest. An amount must be one you said, a contractor must be in the books, and a payment can never be more than what is open.</p>
+          <p>Every message and voice note passes Vultr's content-safety model first, and voice notes are turned into words by Vultr's speech model.</p>
+        </div></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Close my month -->
+  <section class="view" data-panel="close" aria-labelledby="close-title" hidden>
+    <div class="view-head">
+      <h2 id="close-title">Close my month</h2>
+      <p>The close runs on the server in five steps you can watch. It matches by amount and date in code, uses Vultr's models only to rank names and accounts, and waits for you before anything is posted.</p>
+    </div>
+
+    <div class="close-grid">
+      <div class="shell statement-shell"><div class="core statement">
+        <div class="statement-file">
+          <svg class="file-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h6M9.5 15.5h6M9.5 9h2.5"/></svg>
+          <div>
+            <p class="statement-name" data-statement-name>statement-october-2026.csv</p>
+            <p class="statement-meta" data-statement-meta>October's business account statement, from the bank feed.</p>
+          </div>
+        </div>
+        <div class="statement-actions">
+          <a class="btn btn-quiet btn-sm" href="/api/statement/october.csv" download data-download>Download the CSV</a>
+          <label class="btn btn-quiet btn-sm upload">
+            <input type="file" accept=".csv,text/csv" data-upload>
+            Use your own CSV
+          </label>
+        </div>
+        <p class="hint">Your own file can be up to 20 KB, with Date, Description and Amount (or Money in and Money out) columns. It is opened only in a sandbox with no network.</p>
+        <button class="btn btn-primary btn-lg" type="button" data-start-close>
+          <span>Close my month</span>
+          <span class="btn-orb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
+        </button>
+      </div></div>
+
+      <ol class="steps" data-steps aria-label="The five steps">
+        <li class="step" data-step="1"><div class="step-rail"><span class="step-num">1</span></div><div class="step-body"><h3>Read the bank statement</h3><div class="step-feed" data-feed="1"></div></div></li>
+        <li class="step" data-step="2"><div class="step-rail"><span class="step-num">2</span></div><div class="step-body"><h3>Match each line to the books</h3><div class="step-feed" data-feed="2"></div></div></li>
+        <li class="step" data-step="3"><div class="step-rail"><span class="step-num">3</span></div><div class="step-body"><h3>Flag what needs you</h3><div class="step-feed" data-feed="3"></div></div></li>
+        <li class="step" data-step="4"><div class="step-rail"><span class="step-num">4</span></div><div class="step-body"><h3>List who owes, with follow-ups to copy</h3><div class="step-feed" data-feed="4"></div></div></li>
+        <li class="step" data-step="5"><div class="step-rail"><span class="step-num">5</span></div><div class="step-body"><h3>Post approved entries and summarise the month</h3><div class="step-feed" data-feed="5"></div></div></li>
+      </ol>
+    </div>
+
+    <div class="review" data-review hidden>
+      <div class="review-head">
+        <h3>Your decisions</h3>
+        <p data-review-note>Approve or reject each item. Items you leave waiting stay out of the books.</p>
+      </div>
+      <div class="filters" role="tablist" aria-label="Items to decide" data-filters>
+        <button type="button" role="tab" class="pill" data-filter="flag">Needs you <b data-count="flag">0</b></button>
+        <button type="button" role="tab" class="pill" data-filter="matched">Matched <b data-count="matched">0</b></button>
+        <button type="button" role="tab" class="pill" data-filter="suggested">Account suggested <b data-count="suggested">0</b></button>
+        <button type="button" role="tab" class="pill" data-filter="followup">Follow-ups <b data-count="followup">0</b></button>
+        <button type="button" role="tab" class="pill" data-filter="decided">Decided <b data-count="decided">0</b></button>
+      </div>
+      <div class="list-tools">
+        <label class="sort">Order
+          <select data-order>
+            <option value="date">By date</option>
+            <option value="amount">Largest first</option>
+          </select>
+        </label>
+        <button class="btn btn-quiet btn-sm" type="button" data-bulk hidden></button>
+      </div>
+      <ul class="items" data-items></ul>
+      <div class="more"><button class="btn btn-quiet" type="button" data-more hidden>Show more</button></div>
+      <div class="post-bar" data-post-bar>
+        <p data-post-note></p>
+        <button class="btn btn-primary" type="button" data-post>
+          <span>Post approved entries</span>
+          <span class="btn-orb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17 19 7"/></svg></span>
+        </button>
+      </div>
+    </div>
+
+    <article class="summary" data-summary hidden aria-labelledby="summary-title"></article>
+  </section>
+
+  <!-- Books -->
+  <section class="view" data-panel="books" aria-labelledby="books-title" hidden>
+    <div class="view-head">
+      <h2 id="books-title">Books</h2>
+      <p>Everything posted is in the journal, every entry balances, and every decision is in the audit trail.</p>
+    </div>
+    <div class="filters" role="tablist" aria-label="Parts of the books" data-book-tabs>
+      <button type="button" role="tab" class="pill" data-book="journal">Journal</button>
+      <button type="button" role="tab" class="pill" data-book="trial">Trial balance</button>
+      <button type="button" role="tab" class="pill" data-book="owes">Who owes</button>
+      <button type="button" role="tab" class="pill" data-book="bank">Bank lines</button>
+      <button type="button" role="tab" class="pill" data-book="audit">Audit trail</button>
+    </div>
+    <div class="list-tools" data-book-tools></div>
+    <div class="book" data-book-body></div>
+    <div class="more"><button class="btn btn-quiet" type="button" data-book-more hidden>Show more</button></div>
+  </section>
+</main>
+
+<nav class="dock" aria-label="Views">
+  <a href="?v=agent" data-view="agent" class="dock-tab">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H10l-4 4v-4H5z"/></svg><span>Your agent</span></a>
+  <a href="?v=close" data-view="close" class="dock-tab">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7M16 16l2 2 4-4"/></svg><span>Close</span></a>
+  <a href="?v=books" data-view="books" class="dock-tab">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span>Books</span></a>
+</nav>
+
+<button class="to-top" type="button" data-to-top aria-label="Back to top" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+</button>
+
+<footer class="foot">
+  <p>Voice notes are deleted as soon as they are turned into words.</p>
+  <p>Imali AI runs the books, stock and sales of shops, suppliers and company groups. This month-end agent runs on Vultr in Seoul. An Ebenworks product.</p>
+</footer>
+<div class="toast" data-toast role="status" aria-live="polite"></div>
+</body>
+</html>

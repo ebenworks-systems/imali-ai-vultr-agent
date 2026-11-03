@@ -31,6 +31,11 @@ class Ranker(Protocol):
         """For each query, the indexes of the k most similar documents (by embeddings)."""
 
 
+def _apart(n: int, word: str) -> str:
+    """'3 days later', '1 day earlier' or 'on the same day'."""
+    return "on the same day" if n == 0 else f"{n} day {word}" if n == 1 else f"{n} days {word}"
+
+
 @dataclass
 class OpenDoc:
     id: int
@@ -226,7 +231,7 @@ def _money_in(ln, still_open, open_left, scores, ranker_name) -> Outcome:
             return Outcome(
                 ln.id, "matched", "cash_deposit", f"Takings for the week to {d.issued.day} {d.issued:%b} banked",
                 f"{rand(amt)} is exactly the cash counted on {d.issued.day} {d.issued:%B}, banked "
-                f"{(ln.line_date - d.issued).days} day(s) later.",
+                f"{_apart((ln.line_date - d.issued).days, 'later')}.",
                 _entry((ledger.BANK, amt, 0, None), (ledger.CASH, 0, amt, d.id)),
                 [{"document_id": d.id, "number": d.number, "cents": amt}], ranked={},
             )
@@ -324,7 +329,7 @@ def _money_out(ln, still_open, open_left, scores, acc_scores, accounts, paid_out
             return Outcome(
                 ln.id, "flagged", "duplicate", f"{who} paid twice",
                 f"{rand(amt)} went out on {prev.line_date.day} {prev.line_date:%B} with the same wording, "
-                f"{(ln.line_date - prev.line_date).days} day(s) earlier. Approving books this second payment as "
+                f"{_apart((ln.line_date - prev.line_date).days, 'earlier')}. Approving books this second payment as "
                 f"money {who} must pay back, so it does not count as a cost.",
                 _entry((ledger.REFUNDS, amt, 0, None), (ledger.BANK, 0, amt, None)),
                 flag="duplicate", ranked=ranked,

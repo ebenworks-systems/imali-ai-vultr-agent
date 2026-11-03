@@ -65,7 +65,7 @@ def test_errors_never_echo_what_was_sent(client):
 
 def test_no_copy_means_no_books(client):
     r = client.get("/api/state")
-    assert r.status_code == 401
+    assert r.status_code == 200 and r.json() == {"open": False}
     client.cookies.set("imali_copy", "forged.123.sig")
     assert client.get("/api/journal").status_code == 401
 

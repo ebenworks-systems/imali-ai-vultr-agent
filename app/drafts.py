@@ -133,6 +133,21 @@ def followups(llm: LLM, shop: str, owner: str, debtors: list[dict]) -> tuple[dic
     return out, from_model
 
 
+# What each figure means, so the model does not read one as part of another.
+FACT_LABELS = {
+    "money_in": "money into the bank account during the month",
+    "money_out": "money out of the bank account during the month",
+    "sales": "sales invoiced and rung up during the month",
+    "collected": "payments contractors made during the month against any of their invoices, old or new",
+    "debtors": "what contractors owe at the month's end",
+    "debtors_late": "the part of what contractors owe that is past its due date",
+    "creditors": "what the shop owes its suppliers at the month's end",
+    "refunds_due": "money suppliers must pay back to the shop for overpayments",
+    "costs": "the month's costs, stock bought included",
+    "bank_books": "the bank account in the books at the month's end",
+    "bank_statement": "the bank statement's closing balance",
+}
+
 SUMMARY_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -165,7 +180,7 @@ def month_paragraph(llm: LLM, shop: str, month: str, facts: dict[str, int], note
                 )},
                 {"role": "user", "content": json.dumps({
                     "shop": shop, "month": month,
-                    "figures": {k: rand(v) for k, v in facts.items()},
+                    "figures": {FACT_LABELS.get(k, k): rand(v) for k, v in facts.items()},
                     "notes": notes[:8],
                 })},
             ],

@@ -203,7 +203,9 @@ async def leave(request: Request):
 
 @app.get("/api/state")
 async def state(request: Request):
-    wid = current(request)
+    wid = workspace.read_token(request.cookies.get(workspace.COOKIE))
+    if not wid:
+        return {"open": False}
 
     def read():
         with db.tx() as c:
@@ -224,7 +226,7 @@ async def state(request: Request):
                     "SELECT id, status FROM jobs WHERE parent_id = %s ORDER BY id DESC LIMIT 1", (job["id"],)
                 ).fetchone()
             return {
-                "shop": ws["shop_name"], "owner": seed.OWNER_FIRST_NAME,
+                "open": True, "shop": ws["shop_name"], "owner": seed.OWNER_FIRST_NAME,
                 "expires_at": ws["expires_at"].isoformat(),
                 "period": {"start": ws["period_start"].isoformat(), "end": ws["period_end"].isoformat(),
                            "label": f"{ws['period_end']:%B %Y}"},
@@ -235,11 +237,15 @@ async def state(request: Request):
                 "pending": {r["kind"]: r["n"] for r in pending},
                 "close": dict(job) if job else None,
                 "post": dict(post) if post else None,
+                "accounts": {r["code"]: r["name"] for r in c.execute(
+                    "SELECT code, name FROM accounts WHERE workspace_id = %s ORDER BY code", (wid,)).fetchall()},
+                "statement": c.execute(
+                    "SELECT s.file_name, s.period_start, s.period_end, count(l.id) AS lines FROM statements s "
+                    "LEFT JOIN statement_lines l ON l.statement_id = s.id WHERE s.workspace_id = %s "
+                    "GROUP BY s.id ORDER BY s.id DESC LIMIT 1", (wid,)).fetchone(),
             }
     data = await run_in_threadpool(read)
-    if data is None:
-        raise HTTPException(401, "Your copy has ended. Open a new one to carry on.")
-    return data
+    return data if data is not None else {"open": False, "ended": True}
 
 
 # --- your agent ------------------------------------------------------------------------------
@@ -340,13 +346,14 @@ def _proposal_view(p: dict) -> dict:
         "line": pl.get("line"), "amount_cents": pl.get("amount_cents"), "flag": pl.get("flag", ""),
         "outcome": pl.get("outcome", ""), "choices": pl.get("choices") or [], "text": pl.get("text", ""),
         "party": pl.get("party", ""), "entry_date": pl.get("entry_date"), "ranked": pl.get("ranked") or {},
-        "chosen_account": pl.get("chosen_account"),
+        "chosen_account": pl.get("chosen_account"), "line_status": pl.get("status", ""),
+        "contact": pl.get("contact", ""), "late_cents": pl.get("late_cents"),
     }
 
 
 @app.get("/api/proposals")
 async def list_proposals(request: Request, status: str = "pending", kind: str = "", job_id: int = 0,
-                         offset: int = 0, limit: int = 30, order: str = "date"):
+                         offset: int = 0, limit: int = 30, order: str = "date", which: str = ""):
     wid = current(request)
     statuses = {"pending": ["pending"], "decided": ["approved", "rejected", "posted"], "all": ["pending", "approved", "rejected", "posted"]}
     st = statuses.get(status, ["pending"])
@@ -360,6 +367,9 @@ async def list_proposals(request: Request, status: str = "pending", kind: str = 
         with db.tx() as c:
             args = (wid, st, kinds) + ((job_id,) if job_id else ())
             where = "workspace_id = %s AND status = ANY(%s) AND kind = ANY(%s)" + (" AND job_id = %s" if job_id else "")
+            if which in ("matched", "suggested"):
+                where += " AND payload->>'status' = %s"
+                args += (which,)
             total = c.execute(f"SELECT count(*) AS n FROM proposals WHERE {where}", args).fetchone()["n"]
             rows = c.execute(f"SELECT * FROM proposals WHERE {where} ORDER BY {order_sql} OFFSET %s LIMIT %s",
                              args + (offset, limit)).fetchall()
@@ -413,8 +423,8 @@ async def approve_all(request: Request, body: Bulk):
         with db.tx() as c:
             rows = c.execute(
                 "SELECT id FROM proposals WHERE workspace_id = %s AND job_id = %s AND kind = 'match' AND status = 'pending' "
-                "AND (payload->>'outcome' = 'expense') = %s ORDER BY id",
-                (wid, body.job_id, body.which == "suggested"),
+                "AND payload->>'status' = %s ORDER BY id",
+                (wid, body.job_id, body.which),
             ).fetchall()
             for r in rows:
                 proposals.approve(c, wid, r["id"])
@@ -523,6 +533,30 @@ async def job(request: Request, job_id: int, after: int = 0):
     if data is None:
         raise HTTPException(404, "That job is not in this copy.")
     return data
+
+
+@app.get("/api/jobs/{job_id}/counts")
+async def job_counts(request: Request, job_id: int):
+    """How many of a close's items wait, by group, and how many were decided."""
+    wid = current(request)
+
+    def read():
+        with db.tx() as c:
+            rows = c.execute(
+                "SELECT kind, status, coalesce(payload->>'status', '') AS line, count(*) AS n FROM proposals "
+                "WHERE workspace_id = %s AND job_id = %s GROUP BY 1, 2, 3",
+                (wid, job_id),
+            ).fetchall()
+        out = {"flag": 0, "matched": 0, "suggested": 0, "followup": 0, "approved": 0, "rejected": 0, "posted": 0}
+        for r in rows:
+            if r["status"] == "pending":
+                key = r["kind"] if r["kind"] in ("flag", "followup") else r["line"]
+                if key in out:
+                    out[key] += r["n"]
+            elif r["kind"] != "followup":
+                out[r["status"]] += r["n"]
+        return out
+    return await run_in_threadpool(read)
 
 
 @app.get("/api/jobs/{job_id}/stream")
