@@ -15,6 +15,10 @@ write_files:
       KbdInteractiveAuthentication no
       PermitRootLogin prohibit-password
 runcmd:
+  # Vultr's Ubuntu image ships ufw allowing only SSH; open the web ports so both firewalls agree.
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw allow 443/udp
   - systemctl enable --now docker
   - systemctl restart ssh
   - git clone --depth 1 https://github.com/ebenworks-systems/imali-ai-vultr-agent.git /opt/imali-agent

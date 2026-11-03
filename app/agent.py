@@ -135,16 +135,19 @@ class Agent:
         exact = [p for p in ps if p["name"].lower() == s or p["name"].lower().startswith(s) or s in p["name"].lower()]
         if len(exact) == 1:
             return exact[0]
+        ranker = self.svc.ranker
         try:
-            scores = self.svc.ranker.scores(said, [p["name"] for p in ps])
+            scores = ranker.scores(said, [p["name"] for p in ps])
         except VultrError:
             from .ranking import WordRanker
 
-            scores = WordRanker().scores(said, [p["name"] for p in ps])
+            ranker = WordRanker()
+            scores = ranker.scores(said, [p["name"] for p in ps])
         order = sorted(zip(ps, scores), key=lambda x: x[1], reverse=True)
         best, s1 = order[0]
         s2 = order[1][1] if len(order) > 1 else 0.0
-        if s1 >= 0.5 and s1 - s2 >= 0.1:
+        # Each ranker scores on its own scale, so its own cuts decide (matching.Cuts).
+        if ranker.cuts.clear(s1, s2):
             return best
         return None
 

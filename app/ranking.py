@@ -9,6 +9,8 @@ from __future__ import annotations
 import re
 from typing import Sequence
 
+from .matching import WORD_CUTS
+
 # Words that every bank line carries and that say nothing about who or what it was.
 _STOP = {
     "EFT", "CREDIT", "DEBIT", "ORDER", "PAYMENT", "TRANSFER", "INTERNET", "BRANCH", "CARD", "REF",
@@ -40,6 +42,7 @@ class WordRanker:
     """Scores by shared words, word stems and initials ("FOURIE SF" for Fourie Steel Fixers)."""
 
     name = "word match"
+    cuts = WORD_CUTS
 
     def scores(self, query: str, docs: Sequence[str]) -> list[float]:
         q = words(query)

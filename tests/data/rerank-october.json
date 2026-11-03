@@ -1,0 +1,409 @@
+{
+ "model": "bge-reranker-v2-m3",
+ "measured": "2026-11-03",
+ "lines": {
+  "DEBIT ORDER YARD RENT OCTOBER RENT10": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.3641,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0001,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "EFT CREDIT FOURIE STEEL FIX INV1036": {
+   "names": {
+    "Fourie Steel Fixers": 0.9747,
+    "Mosia Plaster & Paint": 0.0,
+    "Msimang Drywall & Ceilings": 0.0001,
+    "Radebe Glazing & Aluminium": 0.0001,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.0002,
+    "Naidoo Tile Studio": 0.0
+   }
+  },
+  "PREPAID ELECTRICITY METER 0412": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.1192,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0001,
+    "Other expenses: small costs that fit nowhere else": 0.0001
+   }
+  },
+  "CASH DEPOSIT BRANCH": {
+   "names": {
+    "Fourie Steel Fixers": 0.0,
+    "Mosia Plaster & Paint": 0.0,
+    "Msimang Drywall & Ceilings": 0.0,
+    "Radebe Glazing & Aluminium": 0.0,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.0,
+    "Naidoo Tile Studio": 0.0
+   }
+  },
+  "CASH DEPOSIT FEE": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0002,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.6724,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0001
+   }
+  },
+  "FUEL DELIVERY TRUCK CARD 4471": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0497,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "EFT CREDIT MOSIA PLASTER INV-1038": {
+   "names": {
+    "Fourie Steel Fixers": 0.0,
+    "Mosia Plaster & Paint": 0.5289,
+    "Msimang Drywall & Ceilings": 0.0,
+    "Radebe Glazing & Aluminium": 0.0,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.0,
+    "Naidoo Tile Studio": 0.0
+   }
+  },
+  "CASH WITHDRAWAL BRANCH": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0058,
+    "Owner's drawings: money the owner took out for personal use": 0.0007,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0001,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "EFT CREDIT MSIMANG DRYWALL OCT PAYMENT": {
+   "names": {
+    "Fourie Steel Fixers": 0.0,
+    "Mosia Plaster & Paint": 0.0,
+    "Msimang Drywall & Ceilings": 0.264,
+    "Radebe Glazing & Aluminium": 0.0,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.0,
+    "Naidoo Tile Studio": 0.0
+   }
+  },
+  "EFT CREDIT RADEBE GLAZING INV1041 INV1047": {
+   "names": {
+    "Fourie Steel Fixers": 0.0,
+    "Mosia Plaster & Paint": 0.0,
+    "Msimang Drywall & Ceilings": 0.0,
+    "Radebe Glazing & Aluminium": 0.3706,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.0001,
+    "Naidoo Tile Studio": 0.0
+   }
+  },
+  "PAYMENT NALANE CEMENT NCT5521": {
+   "names": {
+    "Nalane Cement Traders": 0.0581,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0001
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0015,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "AIRTIME AND DATA SHOP PHONES": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.9684,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "WORKSHOP REPAIRS FORKLIFT JOB 3381": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0163,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "INTERNET TRANSFER": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0064,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0002
+   }
+  },
+  "PAYMENT THABENG ROOF TRS2290": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.1928,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "EFT CREDIT NAIDOO TILES": {
+   "names": {
+    "Fourie Steel Fixers": 0.0,
+    "Mosia Plaster & Paint": 0.0,
+    "Msimang Drywall & Ceilings": 0.0002,
+    "Radebe Glazing & Aluminium": 0.0001,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.0,
+    "Naidoo Tile Studio": 0.514
+   }
+  },
+  "PAYMENT MARUMO STEEL MSS0874": {
+   "names": {
+    "Nalane Cement Traders": 0.0001,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.4512
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.001,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0001,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "SALARIES OCTOBER YARD AND COUNTER": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.862,
+    "Rent: rent for the yard and the shop": 0.0014,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0001,
+    "Security: alarm monitoring and guarding of the yard": 0.0002,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "WATER AND RATES OCTOBER": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0335,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0015,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0001
+   }
+  },
+  "ALARM MONITORING OCTOBER": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.0,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.2214,
+    "Other expenses: small costs that fit nowhere else": 0.0
+   }
+  },
+  "EFT CREDIT PILLAY FENCING": {
+   "names": {
+    "Fourie Steel Fixers": 0.0,
+    "Mosia Plaster & Paint": 0.0,
+    "Msimang Drywall & Ceilings": 0.0004,
+    "Radebe Glazing & Aluminium": 0.0003,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.6779,
+    "Naidoo Tile Studio": 0.0
+   }
+  },
+  "EFT CREDIT FOURIE SF INV 1054": {
+   "names": {
+    "Fourie Steel Fixers": 0.0126,
+    "Mosia Plaster & Paint": 0.0,
+    "Msimang Drywall & Ceilings": 0.0,
+    "Radebe Glazing & Aluminium": 0.0,
+    "Ntuli Shopfitters": 0.0,
+    "Pillay Fencing & Gates": 0.0,
+    "Naidoo Tile Studio": 0.0
+   }
+  },
+  "MONTHLY ACCOUNT FEE": {
+   "names": {
+    "Nalane Cement Traders": 0.0,
+    "Thabeng Roof Sheeting": 0.0,
+    "Marumo Steel Supply": 0.0
+   },
+   "accounts": {
+    "Cash on hand: notes and coins in the till before they are banked": 0.0,
+    "Owner's drawings: money the owner took out for personal use": 0.0,
+    "Stock purchases: cement, bricks, timber, steel and other stock bought for resale": 0.0,
+    "Wages: salaries and wages for yard and counter staff": 0.0,
+    "Rent: rent for the yard and the shop": 0.0,
+    "Electricity and water: prepaid electricity, water and municipal charges": 0.0075,
+    "Fuel and vehicle costs: diesel and petrol for the delivery truck, vehicle repairs": 0.0,
+    "Bank charges: monthly account fee, transaction and cash deposit fees": 0.8905,
+    "Phone and internet: airtime, mobile data and the shop's internet line": 0.0,
+    "Repairs and maintenance: repairs to the yard, the building and equipment": 0.0,
+    "Security: alarm monitoring and guarding of the yard": 0.0,
+    "Other expenses: small costs that fit nowhere else": 0.0001
+   }
+  }
+ }
+}

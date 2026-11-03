@@ -22,6 +22,12 @@ from typing import Callable, Sequence
 import httpx
 
 from .config import settings
+from .matching import Cuts
+
+
+RETRIES = 2
+RETRY_STATUS = {429, 500, 502, 503, 504}
+RETRY_WAIT_S = 0.4
 
 
 class VultrError(Exception):
@@ -67,15 +73,27 @@ class Vultr:
         if not self.ready:
             raise VultrError("no Vultr inference key")
         self._count(service)
-        t0 = time.monotonic()
-        try:
-            r = self._http().post(
-                f"{self.base}{path}", headers={"Authorization": f"Bearer {self.key}"}, **kw
-            )
-        except httpx.HTTPError as exc:
-            raise VultrError(f"{service}: {type(exc).__name__}") from None
-        ms = int((time.monotonic() - t0) * 1000)
-        self.log.append({"service": service, "model": self.models[service], "ms": ms, "status": r.status_code})
+        # A busy or briefly failing endpoint (seen once on rerank, 3 Nov 2026) gets two more tries,
+        # so one 502 does not send a whole close to the word ranker.
+        for attempt in range(RETRIES + 1):
+            t0 = time.monotonic()
+            try:
+                r = self._http().post(
+                    f"{self.base}{path}", headers={"Authorization": f"Bearer {self.key}"}, **kw
+                )
+            except httpx.TransportError as exc:
+                if attempt < RETRIES:
+                    time.sleep(RETRY_WAIT_S * (attempt + 1))
+                    continue
+                raise VultrError(f"{service}: {type(exc).__name__}") from None
+            except httpx.HTTPError as exc:
+                raise VultrError(f"{service}: {type(exc).__name__}") from None
+            ms = int((time.monotonic() - t0) * 1000)
+            self.log.append({"service": service, "model": self.models[service], "ms": ms, "status": r.status_code})
+            if r.status_code in RETRY_STATUS and attempt < RETRIES:
+                time.sleep(RETRY_WAIT_S * (attempt + 1))
+                continue
+            break
         if r.status_code != 200:
             raise VultrError(f"{service}: HTTP {r.status_code}")
         try:
@@ -170,8 +188,18 @@ def _cos(a: Sequence[float], b: Sequence[float]) -> float:
     return dot / (na * nb)
 
 
+# bge-reranker-v2-m3 on terse bank wording, measured on the October statement (3 Nov 2026): the right
+# name scores 0.08 to 0.53 and the right account 0.016 to 0.97, while every wrong one scores 0.000 to
+# 0.007. So its view counts when the first choice clears a small floor and is five times the second;
+# CASH WITHDRAWAL (0.006) and INTERNET TRANSFER (0.006) stay with the owner.
+RERANK_CUTS = Cuts(name_sure=0.05, name_margin=0.0, account_sure=0.01, account_margin=0.0, lead=5.0,
+                   strong=0.1, weak=0.01)
+
+
 class VultrRanker:
     """The matcher's ranker on Vultr: embeddings to shortlist, the reranker to score."""
+
+    cuts = RERANK_CUTS
 
     def __init__(self, v: Vultr):
         self.v = v

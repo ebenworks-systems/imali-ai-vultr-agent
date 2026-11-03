@@ -23,6 +23,7 @@ from .money import rand
 
 class Ranker(Protocol):
     name: str
+    cuts: "Cuts"
 
     def scores(self, query: str, docs: Sequence[str]) -> list[float]:
         """One relevance score from 0 to 1 per document, in the documents' order."""
@@ -82,11 +83,33 @@ class Outcome:
     choices: list[str] = field(default_factory=list)  # accounts the owner may pick for a flagged debit
 
 
-# Below these, a ranker's view does not settle anything.
-NAME_SURE = 0.5
-NAME_MARGIN = 0.15
-ACCOUNT_SURE = 0.35
-ACCOUNT_MARGIN = 0.05
+@dataclass(frozen=True)
+class Cuts:
+    """When a ranker's view settles a name or an account. Each ranker scores on its own scale, so each
+    brings its own cuts: below them the ranker's view settles nothing and the line is left for the owner."""
+
+    name_sure: float = 0.5       # the lowest score a name ranked first may have
+    name_margin: float = 0.15    # how far ahead of the second name it must be to settle a choice
+    account_sure: float = 0.35
+    account_margin: float = 0.05
+    lead: float = 1.0            # and how many times the second's score the first must be
+    strong: float = 0.8          # another name this high, with the invoice's own name under `weak`,
+    weak: float = 0.3            # stops a lone invoice of the same amount from being matched
+
+    def first(self, s1: float, s2: float = 0.0) -> bool:
+        """The name ranked first is believable."""
+        return s1 >= self.name_sure and s1 >= self.lead * s2
+
+    def clear(self, s1: float, s2: float = 0.0) -> bool:
+        """And clearly ahead of the second, so it can choose between two invoices."""
+        return self.first(s1, s2) and s1 - s2 >= self.name_margin
+
+    def account(self, s1: float, s2: float = 0.0) -> bool:
+        return s1 >= self.account_sure and s1 - s2 >= self.account_margin and s1 >= self.lead * s2
+
+
+# The word ranker's scale: shared words score near 1, a stem or initials 0.7 to 0.85.
+WORD_CUTS = Cuts()
 DUPLICATE_DAYS = 7
 DEPOSIT_DAYS = 4
 INVOICE_DAYS = 150
@@ -133,6 +156,7 @@ def match_all(
     """Match every line, oldest first, and return one outcome per line."""
     lines = sorted(lines, key=lambda ln: (ln.line_date, ln.id))
     open_left = {d.id: d.open_cents for d in docs}
+    cuts = getattr(ranker, "cuts", WORD_CUTS)
 
     # Ask the ranker everything up front, in parallel: names for every line, and for money
     # out, the accounts an embedding search puts closest.
@@ -170,9 +194,9 @@ def match_all(
             ]
 
         if ln.amount_cents > 0:
-            o = _money_in(ln, still_open, open_left, names[ln.id], ranker.name)
+            o = _money_in(ln, still_open, open_left, names[ln.id], ranker.name, cuts)
         else:
-            o = _money_out(ln, still_open, open_left, names[ln.id], accs.get(ln.id, {}), accounts, paid_out, ranker.name)
+            o = _money_out(ln, still_open, open_left, names[ln.id], accs.get(ln.id, {}), accounts, paid_out, ranker.name, cuts)
             paid_out.append(ln)
         for a in o.applies:
             open_left[a["document_id"]] -= a["cents"]
@@ -180,7 +204,7 @@ def match_all(
     return out
 
 
-def _money_in(ln, still_open, open_left, scores, ranker_name) -> Outcome:
+def _money_in(ln, still_open, open_left, scores, ranker_name, cuts: Cuts = WORD_CUTS) -> Outcome:
     amt = ln.amount_cents
     invoices = [d for d in still_open("invoice") if (ln.line_date - d.issued).days <= INVOICE_DAYS]
     best, s1, margin = _top(scores)
@@ -257,8 +281,8 @@ def _money_in(ln, still_open, open_left, scores, ranker_name) -> Outcome:
         p1 = parties[0]
         s_p1 = scores.get(p1, 0.0)
         s_p2 = scores.get(parties[1], 0.0) if len(parties) > 1 else 0.0
-        sure = s_p1 >= NAME_SURE and (len(parties) == 1 or s_p1 - s_p2 >= NAME_MARGIN)
-        other_strong = best not in parties and s1 >= 0.8 and s_p1 < 0.3
+        sure = cuts.clear(s_p1, s_p2)
+        other_strong = best not in parties and s1 >= cuts.strong and s_p1 < cuts.weak
         if (len(parties) == 1 and not other_strong) or sure:
             d = sorted([x for x in same if x.party == p1], key=lambda x: x.issued)[0]
             why = (
@@ -280,7 +304,7 @@ def _money_in(ln, still_open, open_left, scores, ranker_name) -> Outcome:
         )
 
     # 4. Two invoices of the customer the name ranks first, together making the amount.
-    if best and s1 >= NAME_SURE:
+    if best and cuts.first(s1, s1 - margin):
         mine = sorted([d for d in invoices if d.party == best], key=lambda x: x.issued)
         for i in range(len(mine)):
             for j in range(i + 1, len(mine)):
@@ -317,7 +341,7 @@ def _money_in(ln, still_open, open_left, scores, ranker_name) -> Outcome:
     )
 
 
-def _money_out(ln, still_open, open_left, scores, acc_scores, accounts, paid_out, ranker_name) -> Outcome:
+def _money_out(ln, still_open, open_left, scores, acc_scores, accounts, paid_out, ranker_name, cuts: Cuts = WORD_CUTS) -> Outcome:
     amt = -ln.amount_cents
     best, s1, margin = _top(scores)
     ranked = {"ranker": ranker_name, "best": best, "score": round(s1, 3), "margin": round(margin, 3)}
@@ -325,7 +349,7 @@ def _money_out(ln, still_open, open_left, scores, acc_scores, accounts, paid_out
     # 1. The same payment again within a week: same amount, same wording.
     for prev in reversed(paid_out):
         if -prev.amount_cents == amt and norm(prev.text) == norm(ln.text) and 0 <= (ln.line_date - prev.line_date).days <= DUPLICATE_DAYS:
-            who = best if s1 >= NAME_SURE else "the payee"
+            who = best if cuts.first(s1, s1 - margin) else "the payee"
             return Outcome(
                 ln.id, "flagged", "duplicate", f"{who} paid twice",
                 f"{rand(amt)} went out on {prev.line_date.day} {prev.line_date:%B} with the same wording, "
@@ -377,7 +401,7 @@ def _money_out(ln, still_open, open_left, scores, acc_scores, accounts, paid_out
     if same:
         parties = sorted({d.party for d in same}, key=lambda p: scores.get(p, 0.0), reverse=True)
         p1 = parties[0]
-        if scores.get(p1, 0.0) >= NAME_SURE or len(parties) == 1 and best == p1:
+        if cuts.first(scores.get(p1, 0.0)) or len(parties) == 1 and best == p1:
             d = sorted([x for x in same if x.party == p1], key=lambda x: x.issued)[0]
             return Outcome(
                 ln.id, "matched", "bill_payment", f"Paid {p1} for {d.number}",
@@ -391,7 +415,7 @@ def _money_out(ln, still_open, open_left, scores, acc_scores, accounts, paid_out
     code, a1, amargin = _top(acc_scores)
     choices = [c for c, _ in sorted(acc_scores.items(), key=lambda kv: kv[1], reverse=True)]
     aranked = {"ranker": ranker_name, "best": code, "score": round(a1, 3), "margin": round(amargin, 3)}
-    if code and a1 >= ACCOUNT_SURE and amargin >= ACCOUNT_MARGIN:
+    if code and cuts.account(a1, a1 - amargin):
         name = by_code[code].name if code in by_code else code
         return Outcome(
             ln.id, "suggested", "expense", f"{name}: {rand(amt)}",
