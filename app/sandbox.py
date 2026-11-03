@@ -34,6 +34,8 @@ def _exchange(suffix: str, data: bytes, timeout: float = 25.0) -> tuple[dict, Pa
     assert root is not None
     job = uuid.uuid4().hex
     in_dir, out_dir = root / "in", root / "out"
+    in_dir.mkdir(exist_ok=True)
+    out_dir.mkdir(exist_ok=True)
     tmp = in_dir / f".{job}.tmp"
     tmp.write_bytes(data)
     os.replace(tmp, in_dir / f"{job}{suffix}")

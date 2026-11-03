@@ -1,0 +1,20 @@
+#cloud-config
+# First boot of the Vultr VM (Ubuntu 24.04): Docker, the code, unattended security updates,
+# key-only SSH. deploy/setup-env.sh then writes deploy/.env and starts the stack.
+package_update: true
+package_upgrade: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - git
+  - unattended-upgrades
+write_files:
+  - path: /etc/ssh/sshd_config.d/10-keys-only.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin prohibit-password
+runcmd:
+  - systemctl enable --now docker
+  - systemctl restart ssh
+  - git clone --depth 1 https://github.com/ebenworks-systems/imali-ai-vultr-agent.git /opt/imali-agent

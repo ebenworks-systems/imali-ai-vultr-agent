@@ -1,0 +1,113 @@
+# The whole agent on one Vultr VM. Caddy is the only container with open ports; Postgres is on
+# an internal network; the parser sandbox has no network at all and shares only a small
+# in-memory folder with the web app.
+name: imali-agent
+
+x-hardened: &hardened
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" }
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: imali
+      POSTGRES_USER: imali
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in deploy/.env}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [db]
+    shm_size: 128m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imali -d imali"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  app:
+    <<: *hardened
+    build: ..
+    image: imali-agent:latest
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://imali:${POSTGRES_PASSWORD}@postgres:5432/imali
+      SANDBOX_DIR: /sandbox
+      TRUST_PROXY: "1"
+      SECURE_COOKIES: "1"
+    tmpfs: ["/tmp:size=16m"]
+    volumes: [sandbox:/sandbox]
+    networks: [db, edge, egress]
+    depends_on:
+      postgres: { condition: service_healthy }
+      parser: { condition: service_started }
+    mem_limit: 768m
+    pids_limit: 256
+
+  worker:
+    <<: *hardened
+    image: imali-agent:latest
+    command: ["python", "-m", "app.worker"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://imali:${POSTGRES_PASSWORD}@postgres:5432/imali
+      # The worker opens no files; this only tells the step stream that uploads went through the sandbox.
+      SANDBOX_DIR: /sandbox
+    tmpfs: ["/tmp:size=16m"]
+    networks: [db, egress]
+    depends_on:
+      postgres: { condition: service_healthy }
+    mem_limit: 512m
+    pids_limit: 128
+
+  parser:
+    <<: *hardened
+    image: imali-agent:latest
+    command: ["python", "-m", "app.parser_sandbox"]
+    environment:
+      SANDBOX_DIR: /sandbox
+      CSV_MAX_BYTES: "20480"
+      VOICE_MAX_SECONDS: "30"
+    network_mode: none
+    tmpfs: ["/tmp:size=32m"]
+    volumes: [sandbox:/sandbox]
+    mem_limit: 256m
+    cpus: 0.75
+    pids_limit: 64
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      SITE_HOST: ${SITE_HOST:?set SITE_HOST in deploy/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+    depends_on: [app]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  pgdata: {}
+  caddy_data: {}
+  caddy_config: {}
+  # The sandbox exchange lives in memory: uploads and voice notes never reach the disk.
+  sandbox:
+    driver: local
+    driver_opts: { type: tmpfs, device: tmpfs, o: "size=24m,uid=10001,gid=10001,mode=0700" }
+
+networks:
+  db: { internal: true }
+  edge: {}
+  egress: {}
