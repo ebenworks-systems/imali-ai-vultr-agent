@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local settings and keys: never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+deploy/*.env
+!deploy/*.env.example
+
+# Test database and run data
+.testdb/
+var/
+
+# Editors and tools
+.idea/
+.vscode/
+.DS_Store
+CLAUDE.local.md
+.claude/
+node_modules/
