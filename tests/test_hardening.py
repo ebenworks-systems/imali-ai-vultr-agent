@@ -80,7 +80,7 @@ def test_a_close_whose_copy_was_removed_ends_quietly(fake):
     close_job.run_post(job_id, svc_mod.factory(wid))
 
 
-def test_start_over_during_the_close_leaves_the_worker_running(fake, monkeypatch):
+def test_start_over_during_the_close_fails_quietly(fake, monkeypatch):
     wid = _copy("start-over-3")
     with db.tx() as c:
         job_id, _ = jobs.start_close(c, wid, None)
@@ -91,7 +91,7 @@ def test_start_over_during_the_close_leaves_the_worker_running(fake, monkeypatch
 
     monkeypatch.setattr(close_job, "_steps_1_to_4", removed_midway)
     close_job.run_close(job_id, svc_mod.factory(wid))  # its error events are dropped, not raised
-    assert worker.run_one() is False  # nothing left queued, and the worker is still here
+    assert _status(job_id) is None  # the job went with its copy
 
 
 def test_model_calls_for_a_removed_copy_stop(fake):
