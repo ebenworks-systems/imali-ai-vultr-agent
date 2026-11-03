@@ -76,7 +76,7 @@ def approve(conn: psycopg.Connection, wid: str, pid: int, *, account: str | None
         "UPDATE proposals SET status = 'approved', decided_at = now(), payload = %s WHERE id = %s",
         (Jsonb(payload), pid),
     )
-    audit(conn, wid, "owner", "approved", "proposal", pid, {"kind": p["kind"], "account": account})
+    audit(conn, wid, "owner", "approved", "proposal", pid, {"title": p["title"][:160], "kind": p["kind"], "account": account})
     if p["kind"] == "record":
         post_one(conn, wid, pid)
     return {"id": pid, "status": "posted" if p["kind"] == "record" else "approved"}
@@ -92,7 +92,7 @@ def reject(conn: psycopg.Connection, wid: str, pid: int, reason: str = "") -> di
         conn.execute(
             "UPDATE statement_lines SET status = 'set_aside' WHERE id = %s AND workspace_id = %s", (line_id, wid)
         )
-    audit(conn, wid, "owner", "rejected", "proposal", pid, {"kind": p["kind"], "reason": reason[:200]})
+    audit(conn, wid, "owner", "rejected", "proposal", pid, {"title": p["title"][:160], "kind": p["kind"], "reason": reason[:200]})
     return {"id": pid, "status": "rejected"}
 
 
@@ -136,7 +136,7 @@ def post_one(conn: psycopg.Connection, wid: str, pid: int) -> int:
             if cur.rowcount != 1:
                 raise ProposalError("That bank line is already in the books.")
         conn.execute("UPDATE proposals SET status = 'posted', posted_at = now() WHERE id = %s", (pid,))
-        audit(conn, wid, "system", "posted", "journal_entry", eid, {"proposal": pid})
+        audit(conn, wid, "system", "posted", "journal_entry", eid, {"title": p["title"][:160], "proposal": pid})
     except (LedgerError, ProposalError, KeyError, ValueError, psycopg.errors.CheckViolation,
             psycopg.errors.UniqueViolation) as exc:
         conn.execute("ROLLBACK TO SAVEPOINT post_one")

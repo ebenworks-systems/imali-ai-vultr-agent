@@ -268,3 +268,26 @@ def test_a_flagged_line_never_goes_to_the_bank_or_a_control_account(workspace, f
     with pytest.raises(proposals.ProposalError):
         with db.tx() as c:
             proposals.approve(c, workspace, p["id"], account=account)
+
+
+# --- the audit trail --------------------------------------------------------------------------
+
+
+def test_each_decision_and_posting_names_its_item_in_the_audit_trail(workspace, fake):
+    with db.tx() as c:
+        job_id, _ = jobs.start_close(c, workspace, None)
+    assert worker.run_one()
+    with db.tx() as c:
+        kept, dropped = c.execute(
+            "SELECT id, title FROM proposals WHERE job_id = %s AND kind = 'match' AND status = 'pending' "
+            "ORDER BY id LIMIT 2", (job_id,)
+        ).fetchall()
+        proposals.approve(c, workspace, kept["id"])
+        proposals.post_one(c, workspace, kept["id"])
+        proposals.reject(c, workspace, dropped["id"])
+        rows = c.execute(
+            "SELECT action, detail FROM audit_log WHERE workspace_id = %s AND action IN ('approved', 'posted', 'rejected')",
+            (workspace,),
+        ).fetchall()
+    named = {r["action"]: r["detail"]["title"] for r in rows}
+    assert named == {"approved": kept["title"], "posted": kept["title"], "rejected": dropped["title"]}
