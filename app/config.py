@@ -38,6 +38,9 @@ class Limits:
     uploads_per_copy: int = field(default_factory=lambda: _int("LIMIT_UPLOADS_PER_COPY", 8))
     # Every call to any model (the reasoning model or a Vultr inference model) counts here.
     model_calls_site_per_day: int = field(default_factory=lambda: _int("LIMIT_MODEL_CALLS_PER_DAY", 4000))
+    # One address's share, so one visitor cannot spend the whole site's day.
+    model_calls_addr_per_day: int = field(default_factory=lambda: _int("LIMIT_MODEL_CALLS_PER_ADDR_PER_DAY", 1000))
+    model_calls_per_copy: int = field(default_factory=lambda: _int("LIMIT_MODEL_CALLS_PER_COPY", 400))
     csv_max_bytes: int = field(default_factory=lambda: _int("CSV_MAX_BYTES", 20 * 1024))
     voice_max_bytes: int = field(default_factory=lambda: _int("VOICE_MAX_BYTES", 1024 * 1024))
     voice_max_seconds: int = field(default_factory=lambda: _int("VOICE_MAX_SECONDS", 30))

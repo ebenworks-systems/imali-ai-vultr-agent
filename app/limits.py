@@ -75,11 +75,15 @@ COPY = 2 * HOUR + 600  # a little longer than a copy lives
 
 
 def model_call(conn: psycopg.Connection, service: str, workspace_id: str | None = None) -> None:
-    """Every call to a model counts against the site's daily ceiling, whichever model it is."""
+    """Every call to a model counts against the site's daily ceiling, whichever model it is, and
+    against the copy's and its visitor's address's own shares."""
     lim = settings().limits
     rules = [("model:site", lim.model_calls_site_per_day, DAY)]
     if workspace_id:
-        rules.append((f"model:ws:{workspace_id}", 400, COPY))
+        rules.append((f"model:ws:{workspace_id}", lim.model_calls_per_copy, COPY))
+        w = conn.execute("SELECT addr_hash FROM workspaces WHERE id = %s", (workspace_id,)).fetchone()
+        if w:
+            rules.append((f"model:addr:{w['addr_hash']}", lim.model_calls_addr_per_day, DAY))
     check(conn, rules, "The agent has done all the work it can do today. Please come back tomorrow.")
 
 

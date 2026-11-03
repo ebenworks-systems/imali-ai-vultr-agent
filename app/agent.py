@@ -118,17 +118,21 @@ def system_prompt(today: date, drafts: list[dict] | None = None) -> str:
 
 
 class Agent:
-    def __init__(self, wid: str, svc: Services, today: date | None = None):
+    def __init__(self, wid: str, svc: Services, today: date | None = None, addr: str | None = None):
         self.wid = wid
         self.svc = svc
+        self.addr = addr  # the visitor's address, so a close from the chat counts against its daily limit
         self.today = today or _today()
         self.drafted: list[int] = []
         self.started_job: int | None = None
 
     # --- the tools -------------------------------------------------------------------------
 
-    def _find_party(self, c: psycopg.Connection, kind: str, said: str) -> dict | None:
-        ps = books.parties(c, self.wid, kind)
+    def _find_party(self, kind: str, said: str) -> dict | None:
+        """The customer or supplier the owner named. The ranking model is called outside any
+        transaction, so a slow answer holds no database connection."""
+        with db.tx() as c:
+            ps = books.parties(c, self.wid, kind)
         if not ps or not said.strip():
             return None
         s = said.strip().lower()
@@ -182,13 +186,15 @@ class Agent:
         paid_with = args.get("paid_with") or ""
         money_acct = ledger.CASH if paid_with == "cash" else ledger.BANK
         payload: dict = {"entry_date": day.isoformat(), "kind": kind, "amount_cents": amount}
-        with db.tx() as c:
-            if kind in ("sale_on_account", "payment_received", "stock_on_account", "supplier_payment"):
-                pkind = "customer" if kind in ("sale_on_account", "payment_received") else "supplier"
-                party = self._find_party(c, pkind, str(args.get("party") or ""))
-                if party is None:
+        party: dict | None = None
+        if kind in ("sale_on_account", "payment_received", "stock_on_account", "supplier_payment"):
+            pkind = "customer" if kind in ("sale_on_account", "payment_received") else "supplier"
+            party = self._find_party(pkind, str(args.get("party") or ""))
+            if party is None:
+                with db.tx() as c:
                     names = ", ".join(p["name"] for p in books.parties(c, self.wid, pkind))
-                    return {"error": f"No {pkind} by that name. The {pkind}s are: {names}. Ask the owner which one."}
+                return {"error": f"No {pkind} by that name. The {pkind}s are: {names}. Ask the owner which one."}
+        with db.tx() as c:
             if kind in ("cash_sale",) and not paid_with:
                 return {"error": "Ask the owner whether the sale was paid in cash or into the bank."}
             if kind in ("expense", "owner_drawing") and not paid_with:
@@ -289,7 +295,7 @@ class Agent:
 
         try:
             with db.tx() as c:
-                job_id, existing = start_close(c, self.wid, None)
+                job_id, existing = start_close(c, self.wid, self.addr)
         except LimitReached as exc:
             return {"error": exc.message}
         except ValueError as exc:
@@ -321,11 +327,13 @@ class Agent:
                 msg = self.svc.llm.chat(messages, tools=TOOLS, max_tokens=600)
             except LLMError:
                 return "I could not reach my reasoning model just now. Please try again in a moment."
-            calls = msg.get("tool_calls") or []
+            # At most four tool calls a round. The assistant message keeps only those, so every
+            # tool call id it carries gets its tool reply, as the chat API requires.
+            calls = (msg.get("tool_calls") or [])[:4]
             if not calls:
                 return _tidy(str(msg.get("content") or "")) or "Done."
             messages.append({"role": "assistant", "content": msg.get("content") or "", "tool_calls": calls})
-            for call in calls[:4]:
+            for call in calls:
                 name = (call.get("function") or {}).get("name")
                 try:
                     args = json.loads((call.get("function") or {}).get("arguments") or "{}")

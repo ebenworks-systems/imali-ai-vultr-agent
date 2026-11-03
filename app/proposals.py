@@ -37,9 +37,14 @@ def _lock(conn: psycopg.Connection, wid: str, pid: int) -> dict:
     return p
 
 
+# The bank, and the two control accounts that must always agree with the open invoices and
+# bills, never take a bank line the owner places by hand.
+NOT_PICKABLE = frozenset({ledger.BANK, ledger.DEBTORS, ledger.CREDITORS})
+
+
 def _entry_for_choice(p: dict, account: str, accounts: set[str]) -> list[dict]:
     """A flagged bank line with no entry gets one from the account the owner picked."""
-    if account not in accounts or account in (ledger.BANK,):
+    if account not in accounts or account in NOT_PICKABLE:
         raise ProposalError("Pick one of the listed accounts.")
     amt = int(p["payload"].get("amount_cents") or 0)
     if amt == 0:
@@ -59,7 +64,7 @@ def approve(conn: psycopg.Connection, wid: str, pid: int, *, account: str | None
     if p["kind"] in ("match", "flag"):
         known = {r["code"] for r in conn.execute("SELECT code FROM accounts WHERE workspace_id = %s", (wid,)).fetchall()}
         if account:
-            if account not in set(payload.get("choices") or []) | {c for c in known if c != ledger.BANK}:
+            if account in NOT_PICKABLE or account not in set(payload.get("choices") or []) | known:
                 raise ProposalError("Pick one of the listed accounts.")
             if payload.get("applies"):
                 raise ProposalError("This payment is tied to an invoice or bill, so its account cannot change.")
@@ -123,10 +128,13 @@ def post_one(conn: psycopg.Connection, wid: str, pid: int) -> int:
             if cur.rowcount != 1:
                 raise ProposalError(f"{a.get('number', 'That document')} no longer has that much open.")
         if payload.get("line_id"):
-            conn.execute(
-                "UPDATE statement_lines SET status = 'posted' WHERE id = %s AND workspace_id = %s",
+            cur = conn.execute(
+                "UPDATE statement_lines SET status = 'posted' WHERE id = %s AND workspace_id = %s "
+                "AND status <> 'posted'",
                 (payload["line_id"], wid),
             )
+            if cur.rowcount != 1:
+                raise ProposalError("That bank line is already in the books.")
         conn.execute("UPDATE proposals SET status = 'posted', posted_at = now() WHERE id = %s", (pid,))
         audit(conn, wid, "system", "posted", "journal_entry", eid, {"proposal": pid})
     except (LedgerError, ProposalError, KeyError, ValueError, psycopg.errors.CheckViolation,

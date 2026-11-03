@@ -10,6 +10,7 @@ import os
 import signal
 import sys
 import time
+import traceback
 
 import psycopg
 
@@ -30,11 +31,19 @@ def run_one() -> bool:
         job = jobs.claim_next(c)
     if job is None:
         return False
-    svc = services.factory(str(job["workspace_id"]))
-    if job["kind"] == "close_month":
-        close_job.run_close(job["id"], svc)
-    else:
-        close_job.run_post(job["id"], svc)
+    try:
+        svc = services.factory(str(job["workspace_id"]))
+        if job["kind"] == "close_month":
+            close_job.run_close(job["id"], svc)
+        else:
+            close_job.run_post(job["id"], svc)
+    except psycopg.OperationalError:
+        raise  # the database went away: main() reconnects
+    except Exception:
+        # One job's failure never stops the worker for everyone else.
+        traceback.print_exc()
+        with db.tx() as c:
+            c.execute("UPDATE jobs SET status = 'failed', finished_at = now() WHERE id = %s", (job["id"],))
     return True
 
 

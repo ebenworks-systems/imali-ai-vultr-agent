@@ -5,6 +5,7 @@
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const PAGE = 30;
+const NOT_PICKABLE = new Set(["1000", "1100", "2000"]); // bank, trade debtors, trade creditors
 
 const S = {
   state: null,
@@ -783,7 +784,8 @@ function accountPicker(p) {
   if (!current) sel.append(el("option", { value: "", text: "Pick the account" }));
   const seen = new Set();
   const add = (code) => {
-    if (!code || seen.has(code) || code === "1000" || !S.accounts[code]) return;
+    // The bank and the debtors and creditors control accounts are never picked by hand.
+    if (!code || seen.has(code) || NOT_PICKABLE.has(code) || !S.accounts[code]) return;
     seen.add(code);
     sel.append(el("option", { value: code, text: `${S.accounts[code]}` }));
   };

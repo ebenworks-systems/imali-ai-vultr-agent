@@ -269,7 +269,7 @@ def _talk(wid: str, addr: str, text: str, via: str) -> dict:
                      "Your agent has answered as many messages as this copy allows. Start over for a fresh copy.")
         history = _history(c, wid)
         c.execute("INSERT INTO messages (workspace_id, role, body, via) VALUES (%s, 'owner', %s, %s)", (wid, text, via))
-    a = agent.Agent(wid, services.factory(wid))
+    a = agent.Agent(wid, services.factory(wid), addr=addr)
     reply = a.reply(text, history)
     with db.tx() as c:
         c.execute("INSERT INTO messages (workspace_id, role, body) VALUES (%s, 'agent', %s)", (wid, reply))

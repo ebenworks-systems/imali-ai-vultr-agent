@@ -22,6 +22,9 @@ def statement_on_file(conn: psycopg.Connection, wid: str) -> int:
 
 def start_close(conn: psycopg.Connection, wid: str, addr: str | None) -> tuple[int, bool]:
     """Queue a close for the statement on file, or return the close already made for it."""
+    # Two requests at once (the chat and the button, or a quick retry) wait here for each other,
+    # so the second finds the first one's statement and job instead of making its own.
+    conn.execute("SELECT 1 FROM workspaces WHERE id = %s FOR UPDATE", (wid,))
     sid = statement_on_file(conn, wid)
     existing = conn.execute(
         "SELECT id FROM jobs WHERE workspace_id = %s AND kind = 'close_month' AND statement_id = %s "

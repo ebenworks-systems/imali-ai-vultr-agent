@@ -38,11 +38,16 @@ STEP_TITLES = {
 
 
 def emit(job_id: int, step: int, kind: str, message: str, data: dict | None = None) -> None:
-    with db.tx() as c:
-        c.execute(
-            "INSERT INTO job_events (job_id, step, kind, message, data) VALUES (%s, %s, %s, %s, %s)",
-            (job_id, step, kind, message[:600], Jsonb(data or {})),
-        )
+    """Add one event to the job's stream. A job whose copy was removed (Start over) has no stream
+    left, so its events are dropped rather than failing the worker."""
+    try:
+        with db.tx() as c:
+            c.execute(
+                "INSERT INTO job_events (job_id, step, kind, message, data) VALUES (%s, %s, %s, %s, %s)",
+                (job_id, step, kind, message[:600], Jsonb(data or {})),
+            )
+    except psycopg.errors.ForeignKeyViolation:
+        pass
 
 
 def store_statement(conn: psycopg.Connection, wid: str, file_name: str, st: dict) -> int:
@@ -94,6 +99,8 @@ def _vultr_used(svc: Services, since: int) -> list[dict]:
 def run_close(job_id: int, svc: Services) -> None:
     with db.tx() as c:
         job = _job(c, job_id)
+        if job is None:  # the copy was removed after the job was claimed
+            return
         wid = str(job["workspace_id"])
         st = c.execute("SELECT * FROM statements WHERE id = %s", (job["statement_id"],)).fetchone()
     try:
@@ -303,6 +310,8 @@ def run_post(job_id: int, svc: Services) -> None:
 def _step_5(job_id: int, svc: Services) -> None:
     with db.tx() as c:
         job = _job(c, job_id)
+        if job is None:  # the copy was removed after the job was claimed
+            return
         wid = str(job["workspace_id"])
         parent = c.execute("SELECT * FROM jobs WHERE id = %s", (job["parent_id"],)).fetchone()
         st = c.execute("SELECT * FROM statements WHERE id = %s", (parent["statement_id"],)).fetchone()
