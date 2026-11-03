@@ -28,7 +28,7 @@ def fake(db_url, monkeypatch):
 
 
 @pytest.fixture()
-def setting(monkeypatch):
+def setting(db_url, monkeypatch):
     def use(name: str, value: str) -> None:
         monkeypatch.setenv(name, value)
         config.reset_settings()
@@ -63,33 +63,43 @@ def _status(job_id: int) -> str | None:
 # --- Start over while a job runs ------------------------------------------------------------
 
 
-def test_start_over_before_the_job_starts_leaves_the_worker_running(fake, monkeypatch):
+def test_an_event_for_a_removed_copy_is_dropped(fake):
     wid = _copy("start-over-1")
     with db.tx() as c:
         job_id, _ = jobs.start_close(c, wid, None)
-    real = close_job.run_close
+    _drop(wid)
+    close_job.emit(job_id, 2, "info", "This event has nowhere to go.")  # raises nothing
 
-    def removed_first(jid, svc):
-        _drop(wid)
-        real(jid, svc)
 
-    monkeypatch.setattr(close_job, "run_close", removed_first)
-    assert worker.run_one() is True
-    assert _status(job_id) is None
+def test_a_close_whose_copy_was_removed_ends_quietly(fake):
+    wid = _copy("start-over-2")
+    with db.tx() as c:
+        job_id, _ = jobs.start_close(c, wid, None)
+    _drop(wid)
+    close_job.run_close(job_id, svc_mod.factory(wid))  # raises nothing
+    close_job.run_post(job_id, svc_mod.factory(wid))
 
 
 def test_start_over_during_the_close_leaves_the_worker_running(fake, monkeypatch):
-    wid = _copy("start-over-2")
+    wid = _copy("start-over-3")
     with db.tx() as c:
         job_id, _ = jobs.start_close(c, wid, None)
 
     def removed_midway(jid, *_a):
         _drop(wid)
-        close_job.emit(jid, 2, "info", "This event has nowhere to go.")
         raise RuntimeError("the copy went away")
 
     monkeypatch.setattr(close_job, "_steps_1_to_4", removed_midway)
-    assert worker.run_one() is True
+    close_job.run_close(job_id, svc_mod.factory(wid))  # its error events are dropped, not raised
+    assert worker.run_one() is False  # nothing left queued, and the worker is still here
+
+
+def test_model_calls_for_a_removed_copy_stop(fake):
+    wid = _copy("start-over-4")
+    _drop(wid)
+    with pytest.raises(limits.LimitReached):
+        with db.tx() as c:
+            limits.model_call(c, "rerank", wid)
 
 
 def test_any_failure_in_a_job_fails_that_job_only(workspace, fake, monkeypatch):
@@ -189,6 +199,9 @@ def test_a_failing_ranker_stops_the_queued_calls():
     calls = []
 
     class Down(WordRanker):
+        def shortlist(self, queries, docs, k):  # embeddings still answer, so the pool is reached
+            return WordRanker().shortlist(queries, docs, k)
+
         def scores(self, query, docs):
             calls.append(query)
             raise VultrError("rerank is not answering")

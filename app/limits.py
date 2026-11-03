@@ -82,8 +82,11 @@ def model_call(conn: psycopg.Connection, service: str, workspace_id: str | None 
     if workspace_id:
         rules.append((f"model:ws:{workspace_id}", lim.model_calls_per_copy, COPY))
         w = conn.execute("SELECT addr_hash FROM workspaces WHERE id = %s", (workspace_id,)).fetchone()
-        if w:
-            rules.append((f"model:addr:{w['addr_hash']}", lim.model_calls_addr_per_day, DAY))
+        if w is None:
+            # The copy was removed (Start over) while its work ran: stop that work here, so
+            # calls made for a removed copy never escape its address's share.
+            raise LimitReached("This copy has ended. Start over for a fresh copy.")
+        rules.append((f"model:addr:{w['addr_hash']}", lim.model_calls_addr_per_day, DAY))
     check(conn, rules, "The agent has done all the work it can do today. Please come back tomorrow.")
 
 

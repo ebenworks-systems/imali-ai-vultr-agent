@@ -449,6 +449,9 @@ async def upload_statement(request: Request, file: UploadFile = File(...)):
 
         st = read_statement(data)
         with db.tx() as c:
+            # The same lock as jobs.start_close, so an upload and a close that seeds October's
+            # statement at the same time never store the same statement twice.
+            c.execute("SELECT 1 FROM workspaces WHERE id = %s FOR UPDATE", (wid,))
             if c.execute("SELECT 1 FROM statements WHERE workspace_id = %s AND sha256 = %s", (wid, st["sha256"])).fetchone():
                 return {"ok": True, "same": True}
             sid = close_job.store_statement(c, wid, name, st)
