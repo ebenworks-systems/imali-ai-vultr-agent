@@ -1,4 +1,4 @@
-The step stream of one close on the live copy, 4 November 2026 (started 03:04:48 KST).
+The step stream of one close on the live copy, 4 November 2026 (started 03:04:48 KST, 20:04 on 3 November on the shop's clock).
 Each line is an event the worker wrote and the page showed as it arrived, timed from the first one.
 Between 16.5 s and 273.5 s the owner read the review and approved all 33 items, then pressed Post approved entries.
 

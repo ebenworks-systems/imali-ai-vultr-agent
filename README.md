@@ -2,7 +2,7 @@
 
 Imali AI runs the books, stock and sales of shops, suppliers and company groups. This repository is its month-end agent for a building-supply merchant. A shop owner usually closes the month by ticking each bank line against invoices, bills and the day's takings by hand; this agent does that matching and leaves the owner only the lines that need a decision. The owner tells their agent what happened by text or voice note, and the agent drafts each record. At the month's end it reads the bank statement, matches every line to the books, flags what does not fit, lists who owes money with follow-ups to copy, and posts what the owner approves to balanced double-entry books.
 
-On the shop's October statement of 33 lines, the live copy closes the month in less than 30 seconds and finds that the shop paid Thabeng Roof Sheeting R21,760.00 twice, that a contractor paid R415.50 less than its invoice, and that contractors owe the shop R57,475.50 past its due date, with a follow-up drafted for each of the three late contractors. It matches 10 lines to invoices, bills and cash-ups, suggests an account for 16 costs and leaves 7 for the owner. Beyond matching, it books the payment made twice as money the supplier must pay back, says why each of the 4 amounts that do not match was flagged, and once all 33 lines are approved and posted, the bank balance in the books equals the statement's closing balance of R126,662.02. The full step stream of that close, through posting, is in [docs/close-stream-october.txt](docs/close-stream-october.txt).
+On the shop's October statement of 33 lines, the live copy reads, matches and flags every line in less than 30 seconds and finds that the shop paid Thabeng Roof Sheeting R21,760.00 twice, that a contractor paid R415.50 less than its invoice, and that contractors owe the shop R57,475.50 past its due date, with a follow-up drafted for each of the three late contractors. It matches 10 lines to invoices, bills and cash-ups, suggests an account for 16 costs and leaves 7 for the owner. Beyond matching, it books the payment made twice as money the supplier must pay back, says why each of the 4 amounts that do not match was flagged, and once all 33 lines are approved and posted, the bank balance in the books equals the statement's closing balance of R126,662.02. The full step stream of that close, through posting, is in [docs/close-stream-october.txt](docs/close-stream-october.txt).
 
 It was built for Challenge 2 of Vultr: Agent Rush, "Powering the Future of Work", and this page is written for the event's judges and for developers who want to run it. Run it, Deploy on Vultr and the Code column of the Vultr table are for developers. The live copy runs on one Vultr VM in Seoul at https://158-247-235-244.sslip.io. To try it, follow the three-minute walk in [DEMO.md](DEMO.md); to run or deploy it yourself, see Run it and Deploy on Vultr below.
 
@@ -20,9 +20,9 @@ The close runs as a job on the server, and each step streams to the page as it h
 
 ## What it looks like
 
-The screenshots are from the live copy on 4 November 2026, at 1280 pixels wide; `docs/screenshots/` also has the main views at 390 pixels, the width of a phone.
+The screenshots are from the live copy on 4 November 2026 in Seoul, which was the evening of 3 November on the shop's clock in South Africa, the clock the app's dates follow. They are 1280 pixels wide; `docs/screenshots/` also has the main views at 390 pixels, the width of a phone.
 
-The close streams each step as it runs, with the Vultr calls each step made. This is the close of 4 November, after posting.
+The close streams each step as it runs, with the Vultr calls each step made. This is that close after posting.
 
 ![Close my month with all five steps done](docs/screenshots/close-steps-1280.png)
 
