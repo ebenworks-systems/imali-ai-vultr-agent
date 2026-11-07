@@ -4,7 +4,7 @@ Imali AI runs the books, stock and sales of shops, suppliers and company groups.
 
 On the shop's October statement of 33 lines, the live copy reads, matches and flags every line in less than 30 seconds and finds that the shop paid Thabeng Roof Sheeting R21,760.00 twice, that a contractor paid R415.50 less than its invoice, and that contractors owe the shop R57,475.50 past its due date, with a follow-up drafted for each of the three late contractors. It matches 10 lines to invoices, bills and cash-ups, suggests an account for 16 costs and leaves 7 for the owner. Beyond matching, it books the payment made twice as money the supplier must pay back, says why each of the 4 amounts that do not match was flagged, and once all 33 lines are approved and posted, the bank balance in the books equals the statement's closing balance of R126,662.02. The full step stream of that close, through posting, is in [docs/close-stream-october.txt](docs/close-stream-october.txt).
 
-It was built for Challenge 2 of Vultr: Agent Rush, "Powering the Future of Work", and this page is written for the event's judges and for developers who want to run it. Run it, Deploy on Vultr and the Code column of the Vultr table are for developers. The live copy runs on one Vultr VM in Seoul at https://158-247-235-244.sslip.io. To try it, follow the three-minute walk in [DEMO.md](DEMO.md); to run or deploy it yourself, see Run it and Deploy on Vultr below.
+It was built for Challenge 2 of Vultr: Agent Rush, "Powering the Future of Work", and this page is written for the event's judges and for developers who want to run it. Run it, Deploy on Vultr and the Code column of the Vultr table are for developers. The live copy runs on one Vultr VM at https://158-247-235-244.sslip.io. To try it, follow the three-minute walk in [DEMO.md](DEMO.md); to run or deploy it yourself, see Run it and Deploy on Vultr below.
 
 ![The review after a close, with the payment made twice and an overpayment first](docs/screenshots/review-1280.png)
 
@@ -20,7 +20,7 @@ The close runs as a job on the server, and each step streams to the page as it h
 
 ## What it looks like
 
-The screenshots are from the live copy on 4 November 2026 in Seoul, which was the evening of 3 November on the shop's clock in South Africa, the clock the app's dates follow. They are 1280 pixels wide; `docs/screenshots/` also has the main views at 390 pixels, the width of a phone.
+The screenshots are from the live copy, taken on the evening of 3 November 2026 on the shop's clock in South Africa, the clock the app's dates follow. They are 1280 pixels wide; `docs/screenshots/` also has the main views at 390 pixels, the width of a phone.
 
 The close streams each step as it runs, with the Vultr calls each step made. This is that close after posting.
 
@@ -42,7 +42,7 @@ The audit trail names every item the agent drafted and the owner approved, rejec
 
 | Vultr service | Model or plan | What it does here | Code |
 |---|---|---|---|
-| Cloud Compute | vc2-2c-4gb, Ubuntu 24.04, Seoul | Runs the whole stack in Docker Compose, with Caddy serving TLS | `deploy/` |
+| Cloud Compute | vc2-2c-4gb, Ubuntu 24.04 | Runs the whole stack in Docker Compose, with Caddy serving TLS | `deploy/` |
 | Serverless Inference | whisper-large-v3-turbo | Turns a voice note of up to 30 seconds into text | `app/vultr.py` `transcribe` |
 | Serverless Inference | qwen3-embedding-4b | Shortlists the five accounts closest to each payment's wording | `VultrRanker.shortlist` |
 | Serverless Inference | bge-reranker-v2-m3 | Scores customers, suppliers and accounts against each statement line | `VultrRanker.scores` |
