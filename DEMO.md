@@ -1,6 +1,6 @@
 # Three minutes with the month-end agent
 
-Open https://158-247-235-244.sslip.io in a browser. The page opens your own copy of the books of Lesedi Ridge Build Supply, a building-supply merchant, for two hours. Changes stay in your copy, and Start over gives you a fresh one at any time.
+Run the app yourself (README.md, Run it; the judges' live copy closed on 13 November 2026) and open it in a browser. The page opens your own copy of the books of Lesedi Ridge Build Supply, a building-supply merchant, for two hours. Changes stay in your copy, and Start over gives you a fresh one at any time.
 
 ## The walk
 
